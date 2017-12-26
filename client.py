@@ -21,6 +21,9 @@ class Client:
 		self.ping_thread = Thread(target=self.ping)
 		self.ping_thread.start()
 
+		self.latency()
+		print("{} {}".format(self.offset, self.delay))
+
 
 	def ping (self):
 		# Send ping request each 5 seconds
@@ -39,6 +42,27 @@ class Client:
 			except zmq.ZMQError:
 				print("Server is not answering to ping request")
 				self.is_connected = False
+
+
+	def latency (self):
+		num_request = 3
+		self.offset = 0
+		self.delay = 0
+
+		for _ in range(num_request):
+			# save time
+			before = time.time()
+			# Server latency request
+			self.socket.send('latency {}'.format(self.idx).encode('utf-8'))
+			msg = self.socket.recv().decode('utf-8')
+			after = time.time()
+
+			# Compute the delay
+			self.delay += (after - before) / 2
+			self.offset += before - float(msg)
+
+		self.offset /= num_request
+		self.delay /= num_request
 	
 
 	def stop (self):

@@ -39,6 +39,9 @@ class Server:
 					print(message)
 					client_id = int(message.strip().split(' ')[1])
 					self.socket.send(b"pong")
+				elif message.startswith("latency"):
+					print(message)
+					self.socket.send("{}".format(time.time()).encode('utf-8'))
 				else:
 					print('Unrecognized message: {}'.format(message))
 					self.socket.send(b'unrecognized message')

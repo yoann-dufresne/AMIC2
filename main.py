@@ -1,19 +1,38 @@
+import time
+
 from game import Game
+import inputs
+# import view
 
 
 def main():
     game = Game(3)
-    print (game.scenes)
-    print (game.collide())
-    game.scenes[0][0] = True
-    print (game.scenes)
-    print (game.collide())
     game.player_relative_move(65)
-    print (game.player_position)
     game.player_absolute_move(355)
-    print (game.player_position)
     game.create_walls(0.7)
-    print(game.scenes)
+
+    inputs.init()
+
+    game_loop(game)
+
+    inputs.close()
+
+
+def game_loop(game):
+    while True:
+        # Update inputs
+        movement = inputs.update()
+        print(movement)
+        # Update game logic
+        game.player_relative_move(movement*360/game.nb_scene)
+        # Update game state
+        if inputs.quit_input:
+            break
+        # Refresh view
+        # view.refresh()
+
+        time.sleep(1)
+
 
 
 if __name__ == '__main__':

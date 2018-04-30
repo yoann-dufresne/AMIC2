@@ -1,5 +1,4 @@
 # Temps réel
-* Déplacement depuis les touches du serveur
 * Mise en place d'un ordonanceur d'événements
 * Timer déclenchant les événements
 * Test des murs en temps réel

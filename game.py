@@ -2,8 +2,12 @@
 
 from math import floor
 from random import shuffle
+import time
 
 NB_CACHE = 3
+
+global_speeds =     [8, 6, 5, 4, 3, 2.5, 2]
+global_speed_uses = [2, 2, 2, 3, 4, 4  , 10]
 
 
 class Game:
@@ -15,6 +19,10 @@ class Game:
         self.nb_scenes = nb_scenes
         self.scenes = [[False] * nb_scenes] * NB_CACHE
         self.player_position = 0.5
+        self.speeds = global_speeds
+        self.speed_uses = global_speed_uses
+        self.start_time = 0
+        self.stop_time = 0
 
         
 
@@ -57,4 +65,24 @@ class Game:
         """ Test if the player is on a scene where a wall if present.
         """
         return self.scenes[0][floor(self.player_position)]
+
+    # ------------ Time functions ------------
+
+    def start_game(self):
+        """ Start the game scheduler
+        """
+        self.start_time = time.time()
+        self.on_time()
+
+    def.stop_game(self):
+        """ Stop the game and save the current time
+        """
+        self.stop_time = time.on_time()
+
+    def on_time(self):
+        """ Function that verify if there are no collisions with walls and schedule the next walls
+        """
+        if collide():
+            self.stop_game()
+
 

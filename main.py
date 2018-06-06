@@ -2,7 +2,7 @@ import time
 
 from game import Game
 import inputs
-# import view
+import view
 
 
 def main():
@@ -22,16 +22,16 @@ def game_loop(game):
     while True:
         # Update inputs
         movement = inputs.update()
-        print(movement)
         # Update game logic
-        game.player_relative_move(movement*360/game.nb_scene)
+        game.player_relative_move(movement*360/game.nb_scenes)
         # Update game state
         if inputs.quit_input:
             break
         # Refresh view
-        # view.refresh()
+        view.refresh(game)
 
-        time.sleep(1)
+
+        time.sleep(0.01)
 
 
 

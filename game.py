@@ -2,12 +2,13 @@
 
 from math import floor
 from random import shuffle
+from scheduler import Scheduler
 import time
 
 NB_CACHE = 3
 
-global_speeds =     [8, 6, 5, 4, 3, 2.5, 2]
-global_speed_uses = [2, 2, 2, 3, 4, 4  , 10]
+global_speeds =     [20, 8, 6, 5, 4, 3, 2.5, 2]
+global_speed_uses = [1 , 2, 2, 2, 3, 4, 4  , 10]
 
 
 class Game:
@@ -19,10 +20,11 @@ class Game:
         self.nb_scenes = nb_scenes
         self.scenes = [[False] * nb_scenes] * NB_CACHE
         self.player_position = 0.5
-        self.speeds = global_speeds
-        self.speed_uses = global_speed_uses
+        self.speeds = global_speeds[::]
+        self.speed_uses = global_speed_uses[::]
         self.start_time = 0
         self.stop_time = 0
+        self.scheduler = Scheduler()
 
         
 
@@ -68,16 +70,19 @@ class Game:
 
     # ------------ Time functions ------------
 
-    def start_game(self):
+    def start(self):
         """ Start the game scheduler
         """
+        self.scheduler.start()
         self.start_time = time.time()
         self.on_time()
 
-    def.stop_game(self):
+    def stop(self):
         """ Stop the game and save the current time
         """
         self.stop_time = time.on_time()
+        self.scheduler.stop()
+        self.scheduler.join()
 
     def on_time(self):
         """ Function that verify if there are no collisions with walls and schedule the next walls

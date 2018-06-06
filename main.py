@@ -19,6 +19,8 @@ def main():
 
 
 def game_loop(game):
+    game.start()
+
     while True:
         # Update inputs
         movement = inputs.update()
@@ -26,6 +28,7 @@ def game_loop(game):
         game.player_relative_move(movement*360/game.nb_scenes)
         # Update game state
         if inputs.quit_input:
+            game.stop()
             break
         # Refresh view
         view.refresh(game)

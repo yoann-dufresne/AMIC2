@@ -1,7 +1,7 @@
 from math import floor
 
 def refresh(game):
-	next_walls = ['-' if val else ' ' for val in game.scenes[0]]
+	next_walls = ['-' if val else ' ' for val in game.scenes]
 	scenes = [' '] * game.nb_scenes
 	scenes[floor(game.player_position)] = "X"
 

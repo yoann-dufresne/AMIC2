@@ -6,7 +6,7 @@ import view
 
 
 def main():
-    game = Game(3)
+    game = Game(8)
     game.player_relative_move(65)
     game.player_absolute_move(355)
     game.create_walls(0.7)

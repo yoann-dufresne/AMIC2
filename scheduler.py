@@ -11,6 +11,17 @@ class Scheduler(threading.Thread):
 
 	def run(self):
 		while not self.stopped:
+			# if no event planned
+			if self.next_event == None:
+				time.sleep(.2)
+				continue
+
+			# see if next event appened
+			clk = time.time()
+			if clk >= self.next_event:
+				self.game.on_time()
+
+			# Wait for next event
 			time.sleep(0.01)
 
 	def stop(self):

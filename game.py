@@ -24,7 +24,7 @@ class Game:
         self.speed_uses = global_speed_uses[::]
         self.start_time = 0
         self.stop_time = 0
-        self.scheduler = Scheduler()
+        self.scheduler = Scheduler(self)
 
         
 
@@ -80,14 +80,14 @@ class Game:
     def stop(self):
         """ Stop the game and save the current time
         """
-        self.stop_time = time.on_time()
+        self.stop_time = time.time()
         self.scheduler.stop()
         self.scheduler.join()
 
     def on_time(self):
         """ Function that verify if there are no collisions with walls and schedule the next walls
         """
-        if collide():
+        if self.collide():
             self.stop_game()
 
 

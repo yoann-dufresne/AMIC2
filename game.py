@@ -6,8 +6,8 @@ from scheduler import Scheduler
 import time
 
 
-global_speeds        = [7, 8 , 6  , 5  , 4  , 3  , 2.5, 2  ]
-global_uses    = [2, 2 , 2  , 2  , 3  , 4  , 4  , 100]
+global_speeds        = [1, 8 , 6  , 5  , 4  , 3  , 2.5, 2  ]
+global_uses          = [2, 2 , 2  , 2  , 3  , 4  , 4  , 100]
 global_probabilities = [0, .5, 5/8, 6/8, 6/8, 7/8, 7/8, 7/8]
 
 
@@ -90,10 +90,8 @@ class Game:
         """ Function that verify if there are no collisions with walls and schedule the next walls
         """
         # In case of wall collision
-        print("---------------------- ON TIME ----------------------")
-
         if self.collide():
-            self.stop()
+            self.stop_time = time.time()
             pass
 
         # Generate new walls and schedule them

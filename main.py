@@ -2,7 +2,7 @@ import time
 
 from game import Game
 import inputs
-import view
+from view import View
 
 
 def main():
@@ -20,6 +20,7 @@ def main():
 
 def game_loop(game):
     game.start()
+    view = View(game)
 
     while True:
         # Update inputs
@@ -27,12 +28,11 @@ def game_loop(game):
         # Update game logic
         game.player_relative_move(movement*360/game.nb_scenes)
         # Update game state
-        if inputs.quit_input:
+        if inputs.quit_input or (game.stop_time != 0):
             game.stop()
             break
         # Refresh view
-        view.refresh(game)
-
+        view.refresh()
 
         time.sleep(0.01)
 

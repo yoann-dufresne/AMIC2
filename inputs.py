@@ -42,6 +42,7 @@ def init():
 
 
 def close():
+    print("Join key Listener")
     thread.join()
 
 

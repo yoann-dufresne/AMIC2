@@ -1,8 +1,3 @@
-# Temps réel
-* Mise en place d'un ordonanceur d'événements
-* Timer déclenchant les événements
-* Test des murs en temps réel
-
 # Menu
 * Démarrage de partie
 * Écoute des connexions client

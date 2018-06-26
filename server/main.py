@@ -7,14 +7,14 @@ from view import View
 
 def main():
     game = Game(8)
+    view = View(game, term=True, net=True)
 
     inputs.init()
-    game_loop(game)
+    game_loop(game, view)
     inputs.close()
 
 
-def game_loop(game):
-    view = View(game)
+def game_loop(game, view):
     game.start()
 
     while game.stop_time == 0:

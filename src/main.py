@@ -4,14 +4,19 @@ from game import Game
 import inputs
 from view import View
 
+from server import Server
+
 
 def main():
     game = Game(8)
     view = View(game, term=True, net=True)
 
-    inputs.init()
-    game_loop(game, view)
-    inputs.close()
+    # Create the server
+    s = Server()
+
+    # inputs.init()
+    # game_loop(game, view)
+    # inputs.close()
 
 
 def game_loop(game, view):

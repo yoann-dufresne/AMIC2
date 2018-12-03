@@ -12,11 +12,17 @@ def main():
     view = View(game, term=True, net=True)
 
     # Create the server
-    s = Server()
+    network = Server()
+    time.sleep(3)
+    # listen the inputs
+    inputs.init()
 
-    # inputs.init()
-    # game_loop(game, view)
-    # inputs.close()
+    # Main game loop
+    game_loop(game, view)
+
+    # Close everything
+    inputs.close()
+    network.stop()
 
 
 def game_loop(game, view):

@@ -1,11 +1,10 @@
 from pynput import keyboard
-import threading
 
 
 mode_debug = True
 quit_input = False
 move = 0
-thread = None
+input_thread = None
 
 
 def on_press(key):
@@ -36,15 +35,15 @@ def on_release(key):
 
 
 def init():
-    global thread
-    thread = keyboard.Listener(on_press=on_press, on_release=on_release)
-    thread.start()
+    global input_thread
+    input_thread = keyboard.Listener(on_press=on_press, on_release=on_release)
+    input_thread.start()
 
 
 def close():
-    global thread
-    thread.stop()
-    thread.join()
+    global input_thread
+    input_thread.stop()
+    input_thread.join()
 
 
 def update():

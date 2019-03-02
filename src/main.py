@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import time
 
 from game import Game
@@ -13,16 +15,18 @@ def main():
 
     # Create the server
     network = Server()
-    time.sleep(3)
-    # listen the inputs
-    inputs.init()
+    # time.sleep(3)
+    # # listen the inputs
+    # inputs.init()
 
-    # Main game loop
-    game_loop(game, view)
+    # # Main game loop
+    # game_loop(game, view)
 
-    # Close everything
-    inputs.close()
-    network.stop()
+    # # Close everything
+    # inputs.close()
+
+    while (not network.stopped):
+        time.sleep(0.2)
 
 
 def game_loop(game, view):

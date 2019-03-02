@@ -5,15 +5,31 @@ import http.server
 import socketserver
 import os
 
+import asyncio
+import websockets
+
 
 class Server:
     def __init__(self, web_port=80):
         self.web_server = WebServer(80)
         self.web_server.start()
+        self.stopped = False
 
     def stop(self):
         self.web_server.stop()
         self.web_server.join()
+        self.stopped = True
+
+
+class WebSocketServer(threading.Thread):
+    def __init__(self):
+        self.stopped = False
+
+    def run(self):
+        start_server = websockets.serve(self.request, 'localhost', 3030)
+
+    def stop(self):
+        self.stopped = True
 
 
 class WebServer(threading.Thread):
@@ -21,6 +37,7 @@ class WebServer(threading.Thread):
     def __init__(self, port=80):
         threading.Thread.__init__(self)
         self.port = 80
+        self.stopped = False
 
     def run(self):
         # Start a simple HTTP server to serve the client web interface
@@ -34,3 +51,4 @@ class WebServer(threading.Thread):
 
     def stop(self):
         self.httpd.shutdown()
+        self.stopped = True

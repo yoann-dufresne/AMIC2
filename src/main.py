@@ -14,7 +14,7 @@ def main():
     view = View(game, term=True, net=True)
 
     # Create the server
-    network = Server()
+    network = Server(web_port=8080)
     # time.sleep(3)
     # # listen the inputs
     # inputs.init()

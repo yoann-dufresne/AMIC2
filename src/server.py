@@ -11,8 +11,14 @@ import websockets
 
 class Server:
     def __init__(self, web_port=80):
-        self.web_server = WebServer(80)
+        # Webserver
+        self.web_server = WebServer(web_port)
         self.web_server.start()
+
+        # Websocket server
+        self.socket_server = WebSocketServer()
+        self.socket_server.start()
+
         self.stopped = False
 
     def stop(self):
@@ -22,21 +28,31 @@ class Server:
 
 
 class WebSocketServer(threading.Thread):
-    def __init__(self):
+    def __init__(self, port=6502):
+        threading.Thread.__init__(self)
+
+        self.port = port
         self.stopped = False
 
     def run(self):
-        start_server = websockets.serve(self.request, 'localhost', 3030)
+        asyncio.set_event_loop(asyncio.new_event_loop())
+        start_server = websockets.serve(request, 'localhost', self.port)
+        print("websocket at port", self.port)
 
     def stop(self):
         self.stopped = True
+
+
+async def request(websocket, path):
+    async for message in websocket:
+        print(message)
 
 
 class WebServer(threading.Thread):
 
     def __init__(self, port=80):
         threading.Thread.__init__(self)
-        self.port = 80
+        self.port = port
         self.stopped = False
 
     def run(self):
@@ -46,7 +62,7 @@ class WebServer(threading.Thread):
 
         Handler = http.server.SimpleHTTPRequestHandler
         self.httpd = socketserver.TCPServer(("", self.port), Handler)
-        print("serving at port", self.port)
+        print("webserver at port", self.port)
         self.httpd.serve_forever()
 
     def stop(self):

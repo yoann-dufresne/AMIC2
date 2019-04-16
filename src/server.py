@@ -7,6 +7,8 @@ import os
 
 import asyncio
 import websockets
+import datetime
+import random
 
 
 class Server:
@@ -36,16 +38,25 @@ class WebSocketServer(threading.Thread):
 
     def run(self):
         asyncio.set_event_loop(asyncio.new_event_loop())
-        start_server = websockets.serve(request, 'localhost', self.port)
         print("websocket at port", self.port)
+        start_server = websockets.serve(self.request, 'localhost', self.port)
+        asyncio.get_event_loop().run_until_complete(start_server)
+        asyncio.get_event_loop().run_forever()
+        print("terminated")
 
     def stop(self):
         self.stopped = True
 
 
-async def request(websocket, path):
-    async for message in websocket:
-        print(message)
+    async def request(self, websocket, path):
+        print("toto")
+        while True:
+            now = datetime.datetime.utcnow().isoformat() + 'Z'
+            await websocket.send(now)
+            await asyncio.sleep(random.random() * 3)
+
+        print("/toto")
+
 
 
 class WebServer(threading.Thread):

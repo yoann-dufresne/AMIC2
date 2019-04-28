@@ -11,6 +11,9 @@ class Network {
     this.connection.onmessage = function (event) {
       console.log(event.data);
     };
+    // this.connection.on("close", funtion (event) {
+    //   console.log("closed");
+    // });
 	}
 
 }

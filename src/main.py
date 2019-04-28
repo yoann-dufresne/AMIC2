@@ -8,6 +8,9 @@ from view import View
 
 from server import Server
 
+import signal
+import sys
+
 
 def main():
     game = Game(8)
@@ -24,6 +27,12 @@ def main():
 
     # # Close everything
     # inputs.close()
+
+
+    def signal_handler(sig, frame):
+        print()
+        network.stop()
+    signal.signal(signal.SIGINT, signal_handler)
 
     while (not network.stopped):
         time.sleep(0.2)

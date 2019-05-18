@@ -35,6 +35,3 @@ class Screen {
 		this.ctx.stroke();
 	}
 }
-
-let scr = new Screen();
-scr.draw_canvas();

@@ -4,6 +4,7 @@ import threading
 import http.server
 import socketserver
 import os
+import sys
 
 import asyncio
 import websockets
@@ -77,7 +78,10 @@ class WebSocketServer(threading.Thread):
 
     async def request(self, websocket, path):
         client_id = self.next_client_id
-        self.client_mailbox[client_id] = [f"id {client_id}"]
+        self.broadcast(f"new_client {client_id}")
+
+        self.client_mailbox[client_id] = [f"new_client {id}" for id in self.client_mailbox]
+        self.client_mailbox[client_id] = [f"id {client_id}"] + self.client_mailbox[client_id]
         self.next_client_id += 1
 
         try:
@@ -96,13 +100,33 @@ class WebSocketServer(threading.Thread):
                 while len(self.client_mailbox[client_id]) > 0:
                     msg = self.client_mailbox[client_id].pop(0)
                     await websocket.send(msg)
+
+                # Receive a message
+                try:
+                    msg = await asyncio.wait_for(websocket.recv(), timeout=0.01)
+                    self.broadcast(msg)
+                except asyncio.TimeoutError:
+                    pass
                 # Wait for a small amout of time
                 await asyncio.sleep(self.connection_rate)
 
         except ConnectionClosed as cc:
             print(f"Disconnection from client {client_id}")
+            self.broadcast(f"client_closed {client_id}")
 
         del self.client_mailbox[client_id]
+
+
+    def send_to(self, to, msg):
+        if to in self.client_mailbox:
+            self.client_mailbox[to].append(msg)
+        else:
+            print(f"[send_to websocket] Wrong destination {to}", file=sys.stderr)
+
+
+    def broadcast(self, msg):
+        for inbox in self.client_mailbox.values():
+            inbox.append(msg)
 
 
 

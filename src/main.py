@@ -18,6 +18,12 @@ def main():
 
     # Create the server
     network = Server(web_port=8080)
+    # Properly close the servers on SIGINT
+    def signal_handler(sig, frame):
+        print()
+        network.stop()
+    signal.signal(signal.SIGINT, signal_handler)
+
     # time.sleep(3)
     # # listen the inputs
     # inputs.init()
@@ -27,12 +33,6 @@ def main():
 
     # # Close everything
     # inputs.close()
-
-
-    def signal_handler(sig, frame):
-        print()
-        network.stop()
-    signal.signal(signal.SIGINT, signal_handler)
 
     while (not network.stopped):
         time.sleep(0.2)

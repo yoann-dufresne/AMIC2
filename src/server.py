@@ -38,7 +38,7 @@ class Server:
         self.stopped = True
 
 
-    def getClients(self):
+    def get_clients(self):
         return deepcopy(self.socket_server.client_type)
 
 
@@ -53,6 +53,11 @@ class WebSocketServer(threading.Thread):
         self.next_client_id = 1
         self.client_mailbox = {}
         self.client_type = {}
+        self.handlers = []
+
+
+    def add_listener(self, handler):
+        self.handlers.append(handler)
 
 
     def run(self):
@@ -85,6 +90,7 @@ class WebSocketServer(threading.Thread):
     async def request(self, websocket, path):
         client_id = self.next_client_id
         self.broadcast(f"new_client {client_id}")
+        print(f"New connection detected. Client {client_id} connected")
 
         self.client_type[client_id] = "unknown"
         self.client_mailbox[client_id] = [f"new_client {id}" for id in self.client_mailbox]
@@ -115,9 +121,12 @@ class WebSocketServer(threading.Thread):
                     if msg.startswith("declare"):
                         _, idx, typ = msg.split()
                         idx = int(idx)
-                        assert (idx == client_id), "Not coresponding id for the client"
+                        assert (idx == client_id), "Not corresponding id between the client and the declaration"
                         self.client_type[idx] = typ
                         print(f"Client {idx} declared as {typ}")
+
+                    for handler in self.handlers:
+                        handler(msg)
 
                     self.broadcast(msg)
                 except asyncio.TimeoutError:

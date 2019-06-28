@@ -67,7 +67,27 @@ class Screen {
 }
 
 
+var button_setter = function(network) {
+  document.getElementById("start_game").onclick = () => {
+    network.send_msg("start");
+  };
+
+  document.getElementById("stop_game").onclick = () => {
+    network.send_msg("stop");
+  };
+
+  document.getElementById("move_left").onclick = () => {
+    network.send_msg("move relative -45.0");
+  };
+
+  document.getElementById("move_right").onclick = () => {
+    network.send_msg("move relative 45.0");
+  };
+}
+
+
 // ----- Main -----
 network = new Network();
+button_setter(network);
 screener = new ScreenManager(network);
 

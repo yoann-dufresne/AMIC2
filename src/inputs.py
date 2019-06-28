@@ -38,6 +38,7 @@ def init():
     global input_thread
     input_thread = keyboard.Listener(on_press=on_press, on_release=on_release)
     input_thread.start()
+    print("Keyboard initiated")
 
 
 def close():

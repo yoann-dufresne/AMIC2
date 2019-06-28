@@ -9,11 +9,18 @@ class Network {
         this.connection = new WebSocket(this.serverUrl);
 
         this.handlers = [];
+        this.id = -1;
 
         var that = this;
         this.connection.onmessage = function (event) {
-          for (let idx=0 ; idx<that.handlers.length ; idx++)
-            that.handlers[idx](event.data);
+            // Get declared id for the central server
+            if (event.data.startsWith("id")) {
+                that.id = event.data.split(" ")[1];
+            }
+
+            // Transmit message to the handlers
+            for (let idx=0 ; idx<that.handlers.length ; idx++)
+                that.handlers[idx](event.data);
         };
 	}
 

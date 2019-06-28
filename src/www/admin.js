@@ -4,16 +4,25 @@
 class ScreenManager {
   constructor(network_manager) {
     this.screen_div = document.getElementById("screens");
-    this.network = network_manager;
-    let that = this;
-    this.network.set_msg_handler((msg)=>{that.screen_adder(msg)});
     this.screens = [];
+    this.network = network_manager;
+    // Register the updaters.
+    let that = this;
+    this.network.set_msg_handler((msg)=>{
+      // Register as admin panel
+      if (msg.startsWith("id"))
+        that.network.send_msg("declare " + that.network.id + " admin");
+    })
+    this.network.set_msg_handler((msg)=>{that.screen_adder(msg)});
+    this.network.set_msg_handler((msg)=>{that.screen_updater(msg)});
   }
 
+  /**
+   * Handler to add and remove screens from the admin page regarding the network communications
+   */
   screen_adder(msg) {
     // New client
     if (msg.startsWith("new_client")) {
-      console.log("message:", msg);
       let screen = new Screen(msg.split(" ")[1]);
       this.screen_div.appendChild(screen.html);
       this.screens.push(screen);
@@ -33,6 +42,13 @@ class ScreenManager {
         return;
       }
     }
+  }
+
+  /**
+   * Handler to update the walls and character position
+   */
+  screen_updater(msg) {
+    console.log("admin screen updater: TODO");
   }
 }
 

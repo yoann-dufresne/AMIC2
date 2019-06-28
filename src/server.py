@@ -11,6 +11,7 @@ import websockets
 from websockets.exceptions import ConnectionClosed
 import datetime
 import random
+from copy import deepcopy
 
 
 class Server:
@@ -37,6 +38,10 @@ class Server:
         self.stopped = True
 
 
+    def getClients(self):
+        return deepcopy(self.socket_server.client_type)
+
+
 class WebSocketServer(threading.Thread):
     def __init__(self, port=6502, connection_rate=0.001):
         threading.Thread.__init__(self)
@@ -47,6 +52,7 @@ class WebSocketServer(threading.Thread):
 
         self.next_client_id = 1
         self.client_mailbox = {}
+        self.client_type = {}
 
 
     def run(self):
@@ -63,7 +69,7 @@ class WebSocketServer(threading.Thread):
 
     async def ws_server(self):
         async with websockets.serve(self.request, 'localhost', self.port):
-            print("websocket at port", self.port)
+            print("websocket initiated at port", self.port)
             await self.stop_condition
 
     async def ws_server_stop(self):
@@ -80,6 +86,7 @@ class WebSocketServer(threading.Thread):
         client_id = self.next_client_id
         self.broadcast(f"new_client {client_id}")
 
+        self.client_type[client_id] = "unknown"
         self.client_mailbox[client_id] = [f"new_client {id}" for id in self.client_mailbox]
         self.client_mailbox[client_id] = [f"id {client_id}"] + self.client_mailbox[client_id]
         self.next_client_id += 1
@@ -104,6 +111,14 @@ class WebSocketServer(threading.Thread):
                 # Receive a message
                 try:
                     msg = await asyncio.wait_for(websocket.recv(), timeout=0.01)
+
+                    if msg.startswith("declare"):
+                        _, idx, typ = msg.split()
+                        idx = int(idx)
+                        assert (idx == client_id), "Not coresponding id for the client"
+                        self.client_type[idx] = typ
+                        print(f"Client {idx} declared as {typ}")
+
                     self.broadcast(msg)
                 except asyncio.TimeoutError:
                     pass
@@ -115,6 +130,7 @@ class WebSocketServer(threading.Thread):
             self.broadcast(f"client_closed {client_id}")
 
         del self.client_mailbox[client_id]
+        del self.client_type[client_id]
 
 
     def send_to(self, to, msg):
@@ -145,7 +161,7 @@ class WebServer(threading.Thread):
 
         Handler = http.server.SimpleHTTPRequestHandler
         self.httpd = socketserver.TCPServer(("", self.port), Handler)
-        print("webserver at port", self.port)
+        print("webserver initiated at port", self.port)
         self.httpd.serve_forever()
 
 

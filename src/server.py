@@ -124,11 +124,11 @@ class WebSocketServer(threading.Thread):
                         assert (idx == client_id), "Not corresponding id between the client and the declaration"
                         self.client_type[idx] = typ
                         print(f"Client {idx} declared as {typ}")
+                    
+                    self.broadcast(msg)
 
                     for handler in self.handlers:
                         handler(msg)
-
-                    self.broadcast(msg)
                 except asyncio.TimeoutError:
                     pass
                 # Wait for a small amout of time
@@ -137,6 +137,10 @@ class WebSocketServer(threading.Thread):
         except ConnectionClosed as cc:
             print(f"Disconnection from client {client_id}")
             self.broadcast(f"client_closed {client_id}")
+
+            # Alert localy of the deconnection
+            for handler in self.handlers:
+                handler(f"client_closed {client_id}")
 
         del self.client_mailbox[client_id]
         del self.client_type[client_id]

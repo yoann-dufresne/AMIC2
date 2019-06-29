@@ -18,14 +18,7 @@ class GameManager:
             print("A game is already running", file=sys.stderr)
             return False
 
-        # Get the clients that are screens
-        nb_screens = 0
-        client_types = self.network.get_clients()
-        for typ in client_types.values():
-            if typ == "screen":
-                nb_screens += 1
-
-        self.current_game = Game(nb_screens)
+        self.current_game = Game(len(self.screens))
 
         return True
 
@@ -41,6 +34,16 @@ class GameManager:
             self.to_start = True
         elif keyword == "stop":
             self.stop_game()
+
+        elif keyword == "declare" and len(split) == 3 and split[2] == "screen":
+            self.screens.append(int(split[1]))
+            order = f"order {' '.join([str(x) for x in self.screens])}"
+            self.network.socket_server.broadcast(order)
+
+        elif keyword == "client_closed":
+            idx = int(split[1])
+            if idx in self.screens:
+                self.screens.remove(idx)
 
         elif keyword == "move":
             # Decompose the command

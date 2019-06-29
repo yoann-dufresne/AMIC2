@@ -6,8 +6,16 @@ class Screen {
 		this.canvas.height = window.innerHeight;
 		this.ctx = this.canvas.getContext('2d');
 
+		this.screen_idx = 0
+		this.nb_screen = 1
+
 		this.game = game;
 		this.start_refresh();
+	}
+
+	update_screen_context(screen_idx, nb_screens) {
+		this.screen_idx = screen_idx;
+		this.nb_screens = nb_screens;
 	}
 
 	start_refresh() {
@@ -23,9 +31,19 @@ class Screen {
 		// Background
 		this.ctx.fillStyle = "black";
 		this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+		
+		let absolute_position = this.game.player*this.nb_screens;
+		let relative_position = absolute_position - this.screen_idx;
+		// Exceptions for extremities
+		if (this.screen_idx == this.nb_screens - 1 && absolute_position < 0.5) {
+			relative_position += this.nb_screens;
+		} else if (this.screen_idx == 0 && absolute_position > this.nb_screens - 0.5) {
+			relative_position -= this.nb_screens;
+		}
+
 		// Draw player
 		this.ctx.fillStyle = "#00ff00";
-		this.ctx.fillRect(this.game.player*this.canvas.width-25, 0.9*this.canvas.height, 50, 50);
+		this.ctx.fillRect(relative_position*this.canvas.width-25, 0.9*this.canvas.height, 50, 50);
 		// Draw Walls
 		this.ctx.strokeStyle="#00ff00"
 		this.ctx.lineWidth=5;

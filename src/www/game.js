@@ -15,6 +15,10 @@ class Game {
                 that.network.send_msg("declare " + that.network.id + " screen");
             else if (msg.startsWith("position"))
                 that.handle_move(msg);
+            else if (msg.startsWith("order"))
+                that.handle_order(msg);
+            else
+                console.log("Not used: " + msg);
         });
 
         // Set up the screen drawer
@@ -22,10 +26,18 @@ class Game {
 	}
 
     handle_move(msg) {
-        console.log(msg);
         let value = Number(msg.split(" ")[1]);
+        this.player = (0.5 + value/360.0) % 1.0;
+    }
 
-        this.player = (0.5 + value/360.0) % 1.0
+    handle_order(msg) {
+        let split = msg.split(" ");
+        for (let idx=1 ; idx<split.length ; idx++) {
+            if (parseInt(split[idx]) == this.network.id) {
+                this.screen.update_screen_context(idx-1, split.length-1);
+                break;
+            }
+        }
     }
 
 }

@@ -18,6 +18,13 @@ h2 {
   display: inline-block;
   height: 200px;
   width: 300px;
-  color: white;
-  background-color: black;
+  color: blue;
+  border: solid red 1px;
+}
+
+.screen p {
+  margin: auto;
+  margin-top: 1px;
+  margin-bottom: 1px;
+  text-align: center;
 }

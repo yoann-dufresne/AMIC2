@@ -23,6 +23,7 @@ class Game {
 
         // Set up the screen drawer
         this.screen = new Screen(this);
+        this.screen.resize(window.innerWidth, window.innerHeight);
 	}
 
     handle_move(msg) {

@@ -6,10 +6,6 @@ class Screen {
 		else
 			this.canvas = canvas;
 
-		// TODO: Change to adapt on the wanted size
-		this.canvas.width = window.innerWidth;
-		this.canvas.height = window.innerHeight;
-		// /TODO
 		this.ctx = this.canvas.getContext('2d');
 
 		this.screen_idx = 0
@@ -59,12 +55,13 @@ class Screen {
 		// Draw player
 		this.ctx.fillStyle = "#00ff00";
 		this.ctx.fillRect(relative_position*this.canvas.width-25, 0.9*this.canvas.height, 50, 50);
+		
 		// Draw Walls
 		this.ctx.strokeStyle="#00ff00"
 		this.ctx.lineWidth=5;
 		this.ctx.beginPath();
-		this.ctx.moveTo(0,0.2*window.innerHeight);
-		this.ctx.lineTo(window.innerWidth,0.2*window.innerHeight);
+		this.ctx.moveTo(0,0.2*this.canvas.height);
+		this.ctx.lineTo(this.canvas.width,0.2*this.canvas.height);
 		this.ctx.stroke();
 	}
 }

@@ -26,9 +26,14 @@ class ScreenManager {
   screen_adder(msg) {
     // New client
     if (msg.startsWith("new_client")) {
+      // Add the new screen
       let screen = new ScreenBox(msg.split(" ")[1], this);
       this.screen_div.appendChild(screen.html);
       this.screens.push(screen);
+      // Update screens
+      for (let idx=0 ; idx<this.screens.length ; idx++) {
+        this.screens[idx].screen.update_screen_context(idx, this.screens.length);
+      }
     // Client closed
     } else if (msg.startsWith("client_closed")) {
       // Get the screen id
@@ -42,7 +47,11 @@ class ScreenManager {
         // Remove the element.
         this.screens.splice(idx);
         this.screen_div.removeChild(screen.html);
-        return;
+        
+        // Update remaning screens
+        for (let idx=0 ; idx<this.screens.length ; idx++) {
+          this.screens[idx].screen.update_screen_context(idx, this.screens.length);
+        }
       }
     }
   }

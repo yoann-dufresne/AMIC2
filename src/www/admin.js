@@ -113,7 +113,34 @@ class ScreenManager {
    * Handler to update the walls and character position
    */
   screen_updater(msg) {
-    console.log("admin screen updater: TODO");
+    let pieces = msg.split(" ");
+    let new_screen_order = [];
+
+    // Sort screenbox
+    for (let idx=1 ; idx<pieces.length ; idx++)
+      for (let screenBox of this.screens) {
+        if (screenBox.id == pieces[idx]) {
+          new_screen_order.push(screenBox);
+          break;
+        }
+      }
+
+    // Protect from wrongly formatted messages
+    if (new_screen_order.length != this.screens.length) {
+      console.log("Wrong order message or bad screen order");
+      return;
+    }
+
+    // Update screen order and remove the boxes from html
+    this.screens = new_screen_order;
+    this.screen_div.innerHTML = "";
+
+    // Rearange screen boxes 
+    for (let idx=0 ; idx<this.screens.length ; idx++) {
+      let screenBox = this.screens[idx];
+      this.screen_div.appendChild(screenBox.html);
+      screenBox.screen.update_screen_context(idx, this.screens.length);
+    }
   }
 }
 

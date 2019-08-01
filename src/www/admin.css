@@ -6,12 +6,29 @@ h2 {
   margin-left: 7%;
 }
 
+#screen_context {
+  margin: auto;
+  width:90%;
+  border: solid black 1px;
+}
+
 #screens {
   margin: auto;
   width: 90%;
-  height: 450px;
-  padding: 50px;
-  border: solid black 1px;
+  min-height: 450px;
+  margin: 50px;
+}
+
+#ordering {
+  padding: 10px;
+  text-align: center;
+  margin:auto;
+}
+
+#ordering>input {
+  width: 30px;
+  margin-right: 10px;
+  text-align: center;
 }
 
 .screen {

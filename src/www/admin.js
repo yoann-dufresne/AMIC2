@@ -4,6 +4,7 @@
 class ScreenManager {
   constructor(network_manager) {
     this.screen_div = document.getElementById("screens");
+    this.setup_order_button();
     this.screens = [];
     this.player = 0.5;
     this.network = network_manager;
@@ -18,6 +19,53 @@ class ScreenManager {
     })
     this.network.set_msg_handler((msg)=>{that.screen_adder(msg)});
     this.network.set_msg_handler((msg)=>{that.screen_updater(msg)});
+  }
+
+  setup_order_button() {
+    let order_button = document.getElementById("change");
+    let that = this;
+    order_button.onclick = ()=>{that.start_ordering()};
+  }
+
+  start_ordering = function(){
+    let order_div = document.getElementById("ordering");
+    let order_button = document.getElementById("change");
+    let that = this;
+
+    order_div.innerHTML = "";
+
+    // Define the text boxes
+    for (let idx=0 ; idx<this.screens.length ; idx++) {
+      let screenBox = this.screens[idx];
+      let txt_box = document.createElement("input");
+      txt_box.type = "text";
+      txt_box.value = screenBox.id;
+      order_div.appendChild(txt_box);
+    }
+
+    // Rename the button and change the function on it
+    order_button.innerHTML = "Done";
+    order_button.onclick = ()=>{that.order()};
+    order_div.appendChild(order_button);
+  };
+
+  order() {
+    var order_div = document.getElementById("ordering");
+    var order_button = document.getElementById("change");
+    let that = this;
+
+    // Send message to reorder
+    var inputs = Array.from(order_div.getElementsByTagName("input"));
+    var values = inputs.map(x=>{return x.value;});
+    var message = "order " + values.join(" ");
+    this.network.send_msg(message);
+    console.log(message);
+
+    // Change the button and revert to pre-ordering
+    order_div.innerHTML = "";
+    order_button.innerHTML = "Change order";
+    order_button.onclick = ()=>{that.start_ordering()};
+    order_div.appendChild(order_button);
   }
 
   /**

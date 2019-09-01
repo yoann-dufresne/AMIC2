@@ -4,6 +4,9 @@ class Game {
 	constructor() {
 		this.player = 0.5;
 		this.walls = [];
+        let current_time = (new Date()).getTime();
+        this.screen_walls = [[current_time, current_time + 5000]];
+        this.time_per_wall = 10000;
 
         // Set up the network connection with the server
         this.network = new Network();
@@ -17,6 +20,8 @@ class Game {
                 that.handle_move(msg);
             else if (msg.startsWith("order"))
                 that.handle_order(msg);
+            else if (msg.startsWith("speed"))
+                that.handle_speed(msg);
             else
                 console.log("Not used: " + msg);
         });
@@ -25,6 +30,19 @@ class Game {
         this.screen = new Screen(this);
         this.screen.resize(window.innerWidth, window.innerHeight);
 	}
+
+    set_new_wall() {
+        // Idx for the wall to check
+        let idx = this.screen.screen_idx;
+        // No need to add a wall
+        if (this.walls.length <= idx || !this.walls[idx])
+            return;
+
+        // Compute due time for the wall
+        let current_time = (new Date()).getTime();
+        let wall_ttl = current_time + this.time_per_wall * 1000;
+        this.screen_walls.push([current_time, wall_ttl]);
+    }
 
     handle_move(msg) {
         let value = Number(msg.split(" ")[1]);
@@ -39,6 +57,20 @@ class Game {
                 break;
             }
         }
+    }
+
+    handle_speed(msg) {
+        let split = msg.split(" ");
+        this.time_per_wall = Number(split[1]);
+    }
+
+    handle_walls(msg) {
+        let split = msg.split(" ");
+        split.shift();
+        this.walls = [];
+        for (val of split)
+            this.walls.push(val.toLowerCase() == "true");
+        this.set_new_wall();
     }
 
 }

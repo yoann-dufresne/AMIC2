@@ -1,6 +1,6 @@
 
 class Screen {
-	constructor(position, canvas=undefined) {
+	constructor(game_state, canvas=undefined) {
 		if (canvas == undefined)
 			this.canvas = document.getElementById("screen");
 		else
@@ -11,13 +11,21 @@ class Screen {
 		this.screen_idx = 0
 		this.nb_screen = 1
 
-		this.position = position;
+		// Time for one wall to get from the creation to the end.
+		this.rotation_time = 5;
+
+		this.char_relative_height = 0.9;
+		this.resize(this.canvas.width, this.canvas.height);
+
+		this.isDrawing = false;
+		this.game_state = game_state;
 		this.start_refresh();
 	}
 
 	resize(width, height) {
 		this.canvas.width = width;
 		this.canvas.height = height;
+		this.char_absolute_height = this.char_relative_height * height;
 	}
 
 	update_screen_context(screen_idx, nb_screens) {
@@ -27,7 +35,7 @@ class Screen {
 
 	start_refresh() {
 		var self = this;
-		this.refreshment = setInterval(()=>{self.draw_canvas()}, 10);
+		this.refreshment = setInterval(()=>{self.draw_canvas()}, 1);
 	}
 
 	stop_refresh() {
@@ -35,11 +43,49 @@ class Screen {
 	}
 
 	draw_canvas() {
-		// Background
+		if (this.isDrawing)
+			return;
+		this.isDrawing = true;
+
+		// Draw the scene
+		this.draw_background();
+		this.draw_walls();
+		this.draw_character();
+
+		this.isDrawing = false;
+	}
+
+	draw_background() {
 		this.ctx.fillStyle = "black";
 		this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-		
-		let absolute_position = this.position.player*this.nb_screens;
+	}
+
+	draw_walls() {
+		this.ctx.strokeStyle="#00ff00"
+		this.ctx.lineWidth=5;
+		let timestamp = (new Date()).getTime();
+
+		for (let wall of this.game_state.screen_walls) {
+			let start = wall[0]; let end = wall[1];
+			let wall_relative_height = (timestamp - start) / (end - start);
+			// < 0.1 : out of screen
+			if (wall_relative_height < 0.1)
+				continue;
+
+			// TODO: Delete the walls out of screen
+
+			// Screen position TODO TODO
+			let real_height = this.char_absolute_height * (wall_relative_height - 0.1);
+
+			this.ctx.beginPath();
+			this.ctx.moveTo(0, real_height);
+			this.ctx.lineTo(this.canvas.width, real_height);
+			this.ctx.stroke();
+		}
+	}
+
+	draw_character() {
+		let absolute_position = this.game_state.player*this.nb_screens;
 		let relative_position = absolute_position - this.screen_idx;
 		// Exceptions for extremities
 		if (this.screen_idx == this.nb_screens - 1 && absolute_position < 0.5) {
@@ -54,14 +100,11 @@ class Screen {
 
 		// Draw player
 		this.ctx.fillStyle = "#00ff00";
-		this.ctx.fillRect(relative_position*this.canvas.width-25, 0.9*this.canvas.height, 50, 50);
-		
-		// Draw Walls
-		this.ctx.strokeStyle="#00ff00"
-		this.ctx.lineWidth=5;
-		this.ctx.beginPath();
-		this.ctx.moveTo(0,0.2*this.canvas.height);
-		this.ctx.lineTo(this.canvas.width,0.2*this.canvas.height);
-		this.ctx.stroke();
+		this.ctx.fillRect(
+			relative_position*this.canvas.width-25,
+			this.char_relative_height * this.canvas.height,
+			50,
+			50
+		);
 	}
 }

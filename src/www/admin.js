@@ -59,7 +59,6 @@ class ScreenManager {
     var values = inputs.map(x=>{return x.value;});
     var message = "order " + values.join(" ");
     this.network.send_msg(message);
-    console.log(message);
 
     // Change the button and revert to pre-ordering
     order_div.innerHTML = "";

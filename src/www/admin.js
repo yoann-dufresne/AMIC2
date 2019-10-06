@@ -6,6 +6,7 @@ class ScreenManager {
     this.screen_div = document.getElementById("screens");
     this.setup_order_button();
     this.screens = [];
+    this.screen_walls = [];
     this.player = 0.5;
     this.network = network_manager;
     // Register the updaters.
@@ -16,7 +17,7 @@ class ScreenManager {
         that.network.send_msg("declare " + that.network.id + " admin");
       else if (msg.startsWith("position"))
         that.handle_move(msg);
-    })
+    });
     this.network.set_msg_handler((msg)=>{that.screen_adder(msg)});
     this.network.set_msg_handler((msg)=>{that.screen_updater(msg)});
   }
@@ -112,6 +113,9 @@ class ScreenManager {
    * Handler to update the walls and character position
    */
   screen_updater(msg) {
+    if (!msg.startsWith("order"))
+      return;
+
     let pieces = msg.split(" ");
     let new_screen_order = [];
 
@@ -126,6 +130,7 @@ class ScreenManager {
 
     // Protect from wrongly formatted messages
     if (new_screen_order.length != this.screens.length) {
+      console.log(new_screen_order, this.screens);
       console.log("Wrong order message or bad screen order");
       return;
     }

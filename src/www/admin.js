@@ -11,15 +11,14 @@ class ScreenManager {
     this.network = network_manager;
     // Register the updaters.
     let that = this;
-    this.network.set_msg_handler((msg)=>{
+    this.network.set_msg_handler("position", msg=>{that.handle_move(msg);});
+    this.network.set_msg_handler("new_client", (msg)=>{that.screen_adder(msg)});
+    this.network.set_msg_handler("client_closed", (msg)=>{that.screen_remover(msg)});
+    this.network.set_msg_handler("order", (msg)=>{that.screen_updater(msg)});
+    this.network.set_msg_handler("id", (msg)=>{
       // Register as admin panel
-      if (msg.startsWith("id"))
-        that.network.send_msg("declare " + that.network.id + " admin");
-      else if (msg.startsWith("position"))
-        that.handle_move(msg);
+      that.network.send_msg("declare " + that.network.id + " admin");
     });
-    this.network.set_msg_handler((msg)=>{that.screen_adder(msg)});
-    this.network.set_msg_handler((msg)=>{that.screen_updater(msg)});
   }
 
   setup_order_button() {
@@ -72,34 +71,32 @@ class ScreenManager {
    * Handler to add and remove screens from the admin page regarding the network communications
    */
   screen_adder(msg) {
-    // New client
-    if (msg.startsWith("new_client")) {
-      // Add the new screen
-      let screen = new ScreenBox(msg.split(" ")[1], this);
-      this.screen_div.appendChild(screen.html);
-      this.screens.push(screen);
-      // Update screens
+    // Add the new screen
+    let screen = new ScreenBox(msg.split(" ")[1], this);
+    this.screen_div.appendChild(screen.html);
+    this.screens.push(screen);
+    // Update screens
+    for (let idx=0 ; idx<this.screens.length ; idx++) {
+      this.screens[idx].screen.update_screen_context(idx, this.screens.length);
+    }
+  }
+
+  screen_remover(msg) {
+    // Get the screen id
+    let id = msg.split(" ")[1];
+    for (let idx=0 ; idx<this.screens.length ; idx++) {
+      // Search for the corresponding screen.
+      screen = this.screens[idx];
+      if (screen.id != id)
+        continue;
+
+      // Remove the element.
+      this.screens.splice(idx);
+      this.screen_div.removeChild(screen.html);
+      
+      // Update remaning screens
       for (let idx=0 ; idx<this.screens.length ; idx++) {
         this.screens[idx].screen.update_screen_context(idx, this.screens.length);
-      }
-    // Client closed
-    } else if (msg.startsWith("client_closed")) {
-      // Get the screen id
-      let id = msg.split(" ")[1];
-      for (let idx=0 ; idx<this.screens.length ; idx++) {
-        // Search for the corresponding screen.
-        screen = this.screens[idx];
-        if (screen.id != id)
-          continue;
-
-        // Remove the element.
-        this.screens.splice(idx);
-        this.screen_div.removeChild(screen.html);
-        
-        // Update remaning screens
-        for (let idx=0 ; idx<this.screens.length ; idx++) {
-          this.screens[idx].screen.update_screen_context(idx, this.screens.length);
-        }
       }
     }
   }
@@ -109,13 +106,19 @@ class ScreenManager {
     this.player = (0.5 + value/360.0) % 1.0;
   }
 
+  handle_walls(msg) {
+    let split = msg.split(" ");
+    split.shift();
+    this.walls = [];
+    for (val of split)
+      this.walls.push(val.toLowerCase() == "true");
+    this.set_new_wall();
+  }
+
   /**
    * Handler to update the walls and character position
    */
   screen_updater(msg) {
-    if (!msg.startsWith("order"))
-      return;
-
     let pieces = msg.split(" ");
     let new_screen_order = [];
 

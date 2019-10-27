@@ -12,18 +12,13 @@ class Game {
         this.network = new Network();
         let that = this;
         // Set handlers
-        this.network.set_msg_handler((msg) => {
+        this.network.set_msg_handler("position", msg=>{that.handle_move(msg)});
+        this.network.set_msg_handler("order", msg=>{that.handle_order(msg)});
+        this.network.set_msg_handler("speed", msg=>{that.handle_speed(msg)});
+        this.network.set_msg_handler("id", (msg) => {
             // Register as screen
-            if (msg.startsWith("id"))
-                that.network.send_msg("declare " + that.network.id + " screen");
-            else if (msg.startsWith("position"))
-                that.handle_move(msg);
-            else if (msg.startsWith("order"))
-                that.handle_order(msg);
-            else if (msg.startsWith("speed"))
-                that.handle_speed(msg);
-            else
-                console.log("Not used: " + msg);
+            that.network.send_msg("declare " + that.network.id + " screen");
+            console.log(that.network.id);
         });
 
         // Set up the screen drawer

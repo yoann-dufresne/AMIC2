@@ -6,12 +6,9 @@ class ScreenManager {
     this.screen_div = document.getElementById("screens");
     this.setup_order_button();
     this.screens = [];
-    this.screen_walls = [];
-    this.player = 0.5;
     this.network = network_manager;
     // Register the updaters.
     let that = this;
-    this.network.set_msg_handler("position", msg=>{that.handle_move(msg);});
     this.network.set_msg_handler("new_client", (msg)=>{that.screen_adder(msg)});
     this.network.set_msg_handler("client_closed", (msg)=>{that.screen_remover(msg)});
     this.network.set_msg_handler("order", (msg)=>{that.screen_updater(msg)});
@@ -77,7 +74,8 @@ class ScreenManager {
     this.screens.push(screen);
     // Update screens
     for (let idx=0 ; idx<this.screens.length ; idx++) {
-      this.screens[idx].screen.update_screen_context(idx, this.screens.length);
+      this.screens[idx].gamestate.screen_idx = idx;
+      this.screens[idx].screen.update_screen_context(this.screens.length);
     }
   }
 
@@ -99,20 +97,6 @@ class ScreenManager {
         this.screens[idx].screen.update_screen_context(idx, this.screens.length);
       }
     }
-  }
-
-  handle_move(msg) {
-    let value = Number(msg.split(" ")[1]);
-    this.player = (0.5 + value/360.0) % 1.0;
-  }
-
-  handle_walls(msg) {
-    let split = msg.split(" ");
-    split.shift();
-    this.walls = [];
-    for (val of split)
-      this.walls.push(val.toLowerCase() == "true");
-    this.set_new_wall();
   }
 
   /**
@@ -146,7 +130,8 @@ class ScreenManager {
     for (let idx=0 ; idx<this.screens.length ; idx++) {
       let screenBox = this.screens[idx];
       this.screen_div.appendChild(screenBox.html);
-      screenBox.screen.update_screen_context(idx, this.screens.length);
+      screenBox.gamestate.screen_idx = idx;
+      screenBox.screen.update_screen_context(this.screens.length);
     }
   }
 }
@@ -154,16 +139,23 @@ class ScreenManager {
 
 class ScreenBox {
   constructor(id, manager) {
-    // Save the name
-    this.id = id;
     // Create the HTML elements
     this.html = document.createElement("div");
     this.html.classList.add("screen");
-    
     // Create the canvas and start refreshment on it
     this.canvas = document.createElement("canvas");
     this.html.appendChild(this.canvas);
-    this.screen = new Screen(manager, this.canvas);
+
+    this.id = id;
+
+    // General game game state
+    this.gamestate = new GameState();
+    // Set up manipulator on gamestate
+    this.manipulator = new GameManipulator(this.gamestate);
+    // Set up the screen drawer
+    this.screen = new Screen(this.gamestate, this.canvas);
+    // Set up message handlers
+    this.manipulator.set_handlers(manager.network);
 
     this.screen.resize(300, 180);
     this.screen.update_screen_context(id-1, 1);

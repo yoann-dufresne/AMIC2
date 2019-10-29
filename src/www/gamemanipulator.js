@@ -17,6 +17,13 @@ class GameManipulator {
     this.gamestate.screen_walls.push([current_time, wall_ttl]);
   }
 
+  set_handlers(network) {
+    let that = this;
+    network.set_msg_handler("position", msg=>{that.handle_move(msg)});
+    network.set_msg_handler("speed", msg=>{that.handle_speed(msg)});
+    network.set_msg_handler("walls", msg=>{that.handle_walls(msg)});
+  }
+
   handle_move(msg) {
     let value = Number(msg.split(" ")[1]);
     this.gamestate.player = (0.5 + value/360.0) % 1.0;

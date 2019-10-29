@@ -15,8 +15,7 @@ class Game {
     this.network = new Network();
     let that = this;
     // Set handlers
-    this.network.set_msg_handler("position", msg=>{that.manipulator.handle_move(msg)});
-    this.network.set_msg_handler("speed", msg=>{that.manipulator.handle_speed(msg)});
+    this.manipulator.set_handlers(this.network);
     this.network.set_msg_handler("id", (msg) => {
       // Register as screen
       that.network.send_msg("declare " + that.network.id + " screen");

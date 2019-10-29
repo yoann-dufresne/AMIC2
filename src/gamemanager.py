@@ -35,10 +35,12 @@ class GameManager:
         elif keyword == "stop":
             self.stop_game()
 
-        elif keyword == "declare" and len(split) == 3 and split[2] == "screen":
-            self.screens.append(int(split[1]))
+        elif keyword == "declare" and len(split) == 3:
+            if split[2] == "screen":
+                self.screens.append(int(split[1]))
             order = f"order {' '.join([str(x) for x in self.screens])}"
             self.network.socket_server.broadcast(order)
+            self.network.socket_server.broadcast(f"position {self.position.position}")
 
         elif keyword == "client_closed":
             idx = int(split[1])
@@ -46,6 +48,7 @@ class GameManager:
                 self.screens.remove(idx)
 
         elif keyword == "move":
+            print("TODO: update move")
             # Decompose the command
             _, mode, value = msg.split()
             value = float(value)
@@ -54,14 +57,20 @@ class GameManager:
             if mode == "relative":
                 self.position.relative_move(value)
             else:
-                print("Invalide movement mode", file=sys.stderr)
+                print(f"Invalide movement mode '{mode}'", file=sys.stderr)
                 return
 
             # Send the new position to clients
             self.network.socket_server.broadcast(f"position {self.position.position}")
 
         elif keyword == "order":
-            print("TODO: Change the sceen order")
+            new_order = [int(x) for x in split[1:]]
+
+            if set(self.screens) != set(new_order):
+                print(f"Wrong screen id in order {new_order}", file=sys.stderr)
+                return
+            
+            self.screens = new_order
 
 
     def game_loop(self):

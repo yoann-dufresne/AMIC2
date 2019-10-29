@@ -1,14 +1,13 @@
 
 class Screen {
-	constructor(game_state, canvas=undefined) {
-		if (canvas == undefined)
+	constructor(game_state, canvas=null) {
+		if (canvas == null)
 			this.canvas = document.getElementById("screen");
 		else
 			this.canvas = canvas;
 
 		this.ctx = this.canvas.getContext('2d');
 
-		this.screen_idx = 0
 		this.nb_screen = 1
 
 		// Time for one wall to get from the creation to the end.
@@ -28,8 +27,7 @@ class Screen {
 		this.char_absolute_height = this.char_relative_height * height;
 	}
 
-	update_screen_context(screen_idx, nb_screens) {
-		this.screen_idx = screen_idx;
+	update_screen_context(nb_screens) {
 		this.nb_screens = nb_screens;
 	}
 
@@ -86,13 +84,13 @@ class Screen {
 
 	draw_character() {
 		let absolute_position = this.game_state.player*this.nb_screens;
-		let relative_position = absolute_position - this.screen_idx;
+		let relative_position = absolute_position - this.game_state.screen_idx;
 		// Exceptions for extremities
-		if (this.screen_idx == this.nb_screens - 1 && absolute_position < 0.5) {
+		if (this.game_state.screen_idx == this.nb_screens - 1 && absolute_position < 0.5) {
 			let tmp = relative_position + this.nb_screens;
 			if (tmp-0.5 < 0.5-relative_position)
 				relative_position = tmp;
-		} else if (this.screen_idx == 0 && absolute_position > this.nb_screens - 0.5) {
+		} else if (this.game_state.screen_idx == 0 && absolute_position > this.nb_screens - 0.5) {
 			let tmp = relative_position - this.nb_screens;
 			if (0.5-tmp < relative_position - 0.5)
 				relative_position = tmp;

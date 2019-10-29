@@ -89,11 +89,10 @@ class WebSocketServer(threading.Thread):
 
     async def request(self, websocket, path):
         client_id = self.next_client_id
-        self.broadcast(f"new_client {client_id}")
         print(f"New connection detected. Client {client_id} connected")
 
         self.client_type[client_id] = "unknown"
-        self.client_mailbox[client_id] = [f"new_client {id}" for id in self.client_mailbox]
+        self.client_mailbox[client_id] = [f"new_client {id}" for id in self.client_mailbox if self.client_type[id] == "screen"]
         self.client_mailbox[client_id] = [f"id {client_id}"] + self.client_mailbox[client_id]
         self.next_client_id += 1
 
@@ -124,6 +123,9 @@ class WebSocketServer(threading.Thread):
                         assert (idx == client_id), "Not corresponding id between the client and the declaration"
                         self.client_type[idx] = typ
                         print(f"Client {idx} declared as {typ}")
+
+                        if typ == "screen":
+                            self.broadcast(f"new_client {client_id}")
                     
                     self.broadcast(msg)
 
@@ -136,7 +138,8 @@ class WebSocketServer(threading.Thread):
 
         except ConnectionClosed as cc:
             print(f"Disconnection from client {client_id}")
-            self.broadcast(f"client_closed {client_id}")
+            if self.client_type[client_id] == "screen":
+                self.broadcast(f"client_closed {client_id}")
 
             # Alert localy of the deconnection
             for handler in self.handlers:

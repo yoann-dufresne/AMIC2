@@ -98,11 +98,12 @@ class Screen {
 
 		// Draw player
 		this.ctx.fillStyle = "#00ff00";
+		let char_size = Math.min(50, this.canvas.width/10);
 		this.ctx.fillRect(
-			relative_position*this.canvas.width-25,
+			relative_position*this.canvas.width-char_size/2,
 			this.char_relative_height * this.canvas.height,
-			50,
-			50
+			char_size,
+			char_size
 		);
 	}
 }

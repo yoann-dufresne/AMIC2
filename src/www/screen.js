@@ -63,6 +63,8 @@ class Screen {
 		this.ctx.lineWidth=5;
 		let timestamp = (new Date()).getTime();
 
+		let wall_to_remove = null;
+
 		for (let wall of this.game_state.screen_walls) {
 			let start = wall[0]; let end = wall[1];
 			let wall_relative_height = (timestamp - start) / (end - start);
@@ -70,7 +72,8 @@ class Screen {
 			if (wall_relative_height < 0.1)
 				continue;
 
-			// TODO: Delete the walls out of screen
+			if (wall_relative_height > 1.2)
+				wall_to_remove = wall;
 
 			// Screen position TODO TODO
 			let real_height = this.char_absolute_height * (wall_relative_height - 0.1);
@@ -80,6 +83,13 @@ class Screen {
 			this.ctx.lineTo(this.canvas.width, real_height);
 			this.ctx.stroke();
 		}
+
+		// remove wall if needed
+		if (wall_to_remove != null) {
+			this.game_state.screen_walls = this.game_state.screen_walls.filter(item=>item!==wall_to_remove);
+			wall_to_remove = null;
+		}
+
 	}
 
 	draw_character() {
@@ -98,7 +108,7 @@ class Screen {
 
 		// Draw player
 		this.ctx.fillStyle = "#00ff00";
-		let char_size = Math.min(50, this.canvas.width/10);
+		let char_size = Math.min(50, this.canvas.height/11);
 		this.ctx.fillRect(
 			relative_position*this.canvas.width-char_size/2,
 			this.char_relative_height * this.canvas.height,

@@ -10,7 +10,7 @@ class GameState {
         // Local values
         this.screen_idx = 0;
         let current_time = (new Date()).getTime();
-        this.screen_walls = [[current_time, current_time + 5000], [current_time + 2000, current_time + 7000]];
+        this.screen_walls = [/*[current_time, current_time + 5000], [current_time + 2000, current_time + 7000]/**/];
 	}
 
     set_new_wall() {

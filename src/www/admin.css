@@ -45,3 +45,7 @@ h2 {
   margin-bottom: 1px;
   text-align: center;
 }
+
+#net_term {
+  display: inline-block;
+}

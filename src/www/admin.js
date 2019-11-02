@@ -185,6 +185,14 @@ var button_setter = function(network) {
   document.getElementById("move_right").onclick = () => {
     network.send_msg("move relative 45.0");
   };
+
+  let that = this;
+  let term = document.getElementById("net_term");
+  document.getElementById("term_send").onclick = () => {
+    let text = term.value;
+    term.value = "";
+    that.network.send_msg(text);
+  };
 }
 
 

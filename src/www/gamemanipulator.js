@@ -38,7 +38,7 @@ class GameManipulator {
     let split = msg.split(" ");
     split.shift();
     this.gamestate.walls = [];
-    for (val of split)
+    for (let val of split)
       this.gamestate.walls.push(val.toLowerCase() == "true");
     this.gamestate.set_new_wall();
   }

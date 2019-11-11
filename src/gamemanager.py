@@ -1,4 +1,4 @@
-import sys
+import sys, time, sched, _thread
 
 from game import Game
 from inputs import PositionCarrier
@@ -9,6 +9,7 @@ class GameManager:
         self.screens = []
         self.network = network
         self.current_game = None
+        self.scheduler = sched.scheduler(time.time, time.sleep)
         self.network.socket_server.add_listener(self.message_handler)
         self.position = PositionCarrier()
 
@@ -18,7 +19,42 @@ class GameManager:
             print("A game is already running", file=sys.stderr)
             return False
 
-        self.current_game = Game(len(self.screens))
+        self.current_game = Game(len(self.screens), self.position, self.scheduler)
+        self.current_game.start()
+        self.loop_thread = _thread.start_new_thread(self.game_loop, ())
+        print("Game created")
+
+        return True
+
+
+    def game_loop(self):
+        saved_events = set()
+
+        while self.current_game.stop_time == 0:
+            # Run the game
+            self.scheduler.run(blocking=False)
+
+            # Obsere new scheduled event
+            for event in self.scheduler.queue:
+                idx = event.kwargs["idx"]
+                if idx not in saved_events:
+                    print("new event", event)
+                    saved_events.add(idx)
+
+            # wait for next loop
+            time.sleep(0.01)
+
+        print("Game loop over")
+        self.current_game = None
+
+
+    def stop_game(self):
+        if self.current_game == None:
+            print("No game running", file=sys.stderr)
+            return False
+
+        self.current_game.stop()
+        print("time elapsed", self.current_game.stop_time - self.current_game.start_time)
 
         return True
 
@@ -31,7 +67,7 @@ class GameManager:
         keyword = split[0]
 
         if keyword == "start":
-            self.to_start = True
+            self.start_game()
         elif keyword == "stop":
             self.stop_game()
 
@@ -48,7 +84,6 @@ class GameManager:
                 self.screens.remove(idx)
 
         elif keyword == "move":
-            print("TODO: update move")
             # Decompose the command
             _, mode, value = msg.split()
             value = float(value)
@@ -71,31 +106,3 @@ class GameManager:
                 return
             
             self.screens = new_order
-
-
-    def game_loop(self):
-        self.current_game.start()
-
-        while self.current_game.stop_time == 0:
-            # Update inputs
-            # movement = inputs.update()
-            # Update game logic
-            # game.player_relative_move(movement*360/game.nb_scenes)
-            # Update game state
-            # if inputs.quit_input:
-            #     break
-            # Refresh view
-            # view.refresh()
-
-            time.sleep(0.01)
-
-        print("Game loop over")
-        game.stop()
-
-
-    def stop_game(self):
-        if self.current_game == None:
-            print("No game running", file=sys.stderr)
-            return False
-
-        return True

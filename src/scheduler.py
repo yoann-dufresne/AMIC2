@@ -5,7 +5,7 @@ class Scheduler(threading.Thread):
 
 	def __init__(self, game):
 		threading.Thread.__init__(self)
-		self.next_event = None
+        self.events = []
 		self.stopped = False
 		self.game = game
 
@@ -26,3 +26,8 @@ class Scheduler(threading.Thread):
 
 	def stop(self):
 		self.stopped = True
+
+
+class ScheduledEvent():
+
+    def __init__(self, ttl, callback)

@@ -11,3 +11,6 @@ class PositionCarrier:
     def relative_move(self, deg):
         self.position += deg
         self.position %= 360
+
+    def __repr__(self):
+        return str(self.position)

@@ -20,11 +20,14 @@ class Game:
         self.nb_scenes = nb_scenes
         self.scenes = [False] * nb_scenes
         self.player = player
+        self.colided = False
+
         self.difficulty = 0
         self.start_time = 0
         self.stop_time = 0
         self.scheduler = scheduler
         self.event_idx = 0
+
 
         self.difficulty_parameters = []
         for idx, nb_uses in enumerate(global_uses):
@@ -61,23 +64,27 @@ class Game:
     def collide(self):
         """ Test if the player is on a scene where a wall if present.
         """
-        return self.scenes[floor(self.nb_scenes * self.player.position / 360.)]
+        position = self.player.get_ratio_position()
+        screen = floor(position * self.nb_scenes)
+        return self.scenes[screen]
 
     # ------------ Time functions ------------
 
     def start(self):
         """ Start the game scheduler
         """
+        self.colided = False
+
         self.start_time = time.time()
         self.difficulty = 0
         self.update_game_state()
 
 
-    def update_game_state(self, idx=0, walls=[]):
+    def update_game_state(self, idx=0, walls=[], speed=1):
         # Test for wall collision
         if self.collide():
-            print("collide")
             self.stop()
+            self.colided = True
             return
 
         # Get difficulty state in the game
@@ -92,7 +99,8 @@ class Game:
         # Add the walls to the event scheduler
         self.scheduler.enter(speed, 1, self.update_game_state, kwargs={
             "idx": self.event_idx,
-            "walls": self.scenes[::]
+            "walls": self.scenes[::],
+            "speed": speed
         })
         self.event_idx += 1
 

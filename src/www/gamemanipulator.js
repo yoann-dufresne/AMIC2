@@ -26,7 +26,7 @@ class GameManipulator {
 
   handle_move(msg) {
     let value = Number(msg.split(" ")[1]);
-    this.gamestate.player = (0.5 + value/360.0) % 1.0;
+    this.gamestate.player = (value/360.0) % 1.0;
   }
 
   handle_speed(msg) {

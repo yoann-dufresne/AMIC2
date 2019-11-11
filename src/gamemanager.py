@@ -22,7 +22,7 @@ class GameManager:
         self.current_game = Game(len(self.screens), self.position, self.scheduler)
         self.current_game.start()
         self.loop_thread = _thread.start_new_thread(self.game_loop, ())
-        print("Game created")
+        print("Game started")
 
         return True
 
@@ -38,13 +38,21 @@ class GameManager:
             for event in self.scheduler.queue:
                 idx = event.kwargs["idx"]
                 if idx not in saved_events:
-                    print("new event", event)
                     saved_events.add(idx)
+                    # broadcast the speed of the new event
+                    self.network.socket_server.broadcast(f"speed {event.kwargs['speed']}")
+                    # broadcast the wall positions
+                    wall_states = ' '.join([str(x) for x in event.kwargs["walls"]])
+                    self.network.socket_server.broadcast(f"walls {wall_states}")
 
             # wait for next loop
             time.sleep(0.01)
 
-        print("Game loop over")
+        if self.current_game.colided:
+            print("Game finished on collision")
+            self.network.socket_server.broadcast("stop")
+        else:
+            print("Game was terminated by external action")
         self.current_game = None
 
 
@@ -76,7 +84,7 @@ class GameManager:
                 self.screens.append(int(split[1]))
             order = f"order {' '.join([str(x) for x in self.screens])}"
             self.network.socket_server.broadcast(order)
-            self.network.socket_server.broadcast(f"position {self.position.position}")
+            self.network.socket_server.broadcast(f"position {self.position.get_degree_position()}")
 
         elif keyword == "client_closed":
             idx = int(split[1])
@@ -96,7 +104,7 @@ class GameManager:
                 return
 
             # Send the new position to clients
-            self.network.socket_server.broadcast(f"position {self.position.position}")
+            self.network.socket_server.broadcast(f"position {self.position.get_degree_position()}")
 
         elif keyword == "order":
             new_order = [int(x) for x in split[1:]]

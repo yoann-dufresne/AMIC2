@@ -16,6 +16,7 @@ class ScreenManager {
       // Register as admin panel
       that.network.send_msg("declare " + that.network.id + " admin");
     });
+    this.setup_time_keeper();
   }
 
   setup_order_button() {
@@ -133,6 +134,36 @@ class ScreenManager {
       screenBox.gamestate.screen_idx = idx;
       screenBox.screen.update_screen_context(this.screens.length);
     }
+  }
+
+  setup_time_keeper() {
+    let start_time = 0.0;
+    let is_running = false;
+    let updater = null;
+    let clock = document.getElementById("elapsed_time");
+
+    this.network.set_msg_handler("start", ()=>{
+      if (is_running) {
+        console.log("multiple start detected");
+        return;
+      }
+
+      is_running = true;
+      start_time = Date.now();
+
+      clock.innerHTML = 0.0;
+      clock.style.color = "black";
+      updater = setInterval(()=>{clock.innerHTML = ((Date.now()-start_time)/1000)}, 100);
+    });
+
+    this.network.set_msg_handler("stop", ()=>{
+      if (!is_running)
+        return;
+
+      clearInterval(updater);
+      is_running = false;
+      clock.style.color = "red";
+    });
   }
 }
 

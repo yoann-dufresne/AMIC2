@@ -1,0 +1,9 @@
+[submodule "src/sensor/MPU6050"]
+	path = src/sensor/MPU6050
+	url = git@github.com:yoann-dufresne/MPU6050_tockn.git
+[submodule "src/sensor/RadioHead"]
+	path = src/sensor/RadioHead
+	url = https://github.com/yoann-dufresne/RadioHead.git
+[submodule "src/sensor/emit/RadioHead"]
+	path = src/sensor/emit/RadioHead
+	url = https://github.com/yoann-dufresne/RadioHead.git

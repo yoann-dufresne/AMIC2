@@ -5,11 +5,15 @@
 // --- Radio reception ---
 RF24 radio(7, 8); // CE, CSN
 const byte address[6] = "00001";
-char msg[12];
+char msg[16];
 float* values = (float*)msg;
 
 void setup() {
-  Serial.begin(9600);
+  unsigned long * db = (unsigned long *)values;
+  *db = 0xDEADBEEFUL;
+  values += 1;
+  
+  Serial.begin(115200);
   radio.begin();
   radio.openReadingPipe(0, address);
   radio.setPALevel(RF24_PA_MIN);
@@ -17,11 +21,8 @@ void setup() {
 }
 void loop() {
   if (radio.available()) {
-    radio.read(&msg, sizeof(msg));
-    
-    Serial.println(values[0]);
-    Serial.println(values[1]);
-    Serial.println(values[2]);
-    Serial.println();
+    radio.read(values, 12);
+    Serial.write(msg, 16);
+    Serial.flush();
   }
 }

@@ -28,7 +28,7 @@ class ArduinoManager(Thread):
             self.discover_arduinos()
 
             for id, com in self.coms.items():
-                if id not in self.ports.keys():
+                if id not in self.ports.keys() and not com.keep_alive:
                     com.stop()
                     com.join()
             
@@ -49,7 +49,7 @@ class ArduinoManager(Thread):
             com.stop()
             com.join()
 
-    def open_serial(self, device_serial_number=None, packet_size=1):
+    def open_serial(self, device_serial_number=None, packet_size=1, keep_alive=False):
         # Try to infer serial number
         if device_serial_number == None:
             if len(self.ports) == 1:
@@ -63,8 +63,11 @@ class ArduinoManager(Thread):
 
         # Try to open connection
         if device_serial_number not in self.ports:
-            print("Wrong serial number. The arduino not seems to be connected.", file=sys.stderr)
-        com = ArduinoCommunicator(self.ports[device_serial_number], packet_size=packet_size)
+            print(f"Arduino Manager: Wrong serial number. The arduino {device_serial_number} not seems to be connected.", file=sys.stderr)
+            return None
+
+        time.sleep(1)
+        com = ArduinoCommunicator(self.ports[device_serial_number], packet_size=packet_size, keep_alive=keep_alive)
         self.coms[device_serial_number] = com
         return com
 
@@ -84,13 +87,14 @@ class ArduinoManager(Thread):
 
 class ArduinoCommunicator(Thread):
 
-    def __init__(self, port, packet_size=1):
+    def __init__(self, port, packet_size=1, keep_alive=False):
         Thread.__init__(self)
         self.terminated = False
         self.port = port
         self.serial = None
         self.packet_size = packet_size
         self.offset = 0
+        self.keep_alive = keep_alive
 
         self.listeners = []
         self.start()
@@ -106,66 +110,85 @@ class ArduinoCommunicator(Thread):
         self.listener.remove(listener)
 
     def run(self):
-        serial_pipe = serial.Serial(self.port.device, 115200)
-        # serial_pipe.open()
-        serial_pipe.reset_input_buffer()
-        serial_pipe.reset_output_buffer()
+        keep_alive = True
 
-        while not self.terminated:
-            try:
-                # remove bytes is asked for offset
-                if self.offset > 0:
-                    serial_pipe.read(size=self.offset)
-                    self.offset = 0
+        while keep_alive and not self.terminated:
+            # Init the connection
+            serial_pipe = None
 
-                # Read byte packet
-                data = serial_pipe.read(size=self.packet_size)
-                for listener in self.listeners:
-                    listener(data)
-            except serial.SerialException:
-                print(f"port {self.port.device} on device {self.port.serial_number} seems closed.", file=sys.stderr)
-                print("Halting reading thread.", file=sys.stderr)
-                self.terminated = True
+            while serial_pipe is None:
+                try:
+                    serial_pipe = serial.Serial(self.port.device, 115200)
+                    # serial_pipe.open()
+                    serial_pipe.reset_input_buffer()
+                    serial_pipe.reset_output_buffer()
+                except serial.SerialException:
+                    serial_pipe = None
+                    print(f"Impossible to contact {self.port.serial_number}")
+                    print("Try again in 2 second...")
+                    time.sleep(2)
 
-        serial_pipe.close()
+            print(f"Arduino {self.port.serial_number} connected")
+
+            # Use the serial port
+            broken_pipe = False
+            while (not self.terminated) and (not broken_pipe):
+                try:
+                    # remove bytes is asked for offset
+                    if self.offset > 0:
+                        serial_pipe.read(size=self.offset)
+                        self.offset = 0
+
+                    # Read byte packet
+                    data = serial_pipe.read(size=self.packet_size)
+                    for listener in self.listeners:
+                        listener(data)
+                except serial.SerialException:
+                    print(f"port {self.port.device} on device {self.port.serial_number} seems closed", file=sys.stderr)
+                    broken_pipe = True
+
+            if not broken_pipe:
+                serial_pipe.close()
+            keep_alive = self.keep_alive
 
     def stop(self):
         self.terminated = True
 
 
-# TODO: Refactor from here
+# Following lines are debug tests
+if __name__ == "__main__":
+    # TODO: Refactor from here
+    arduino_manager = ArduinoManager(verbose=True)
+    print('manager constructed')
 
-manager = ArduinoManager(verbose=True)
-print('manager constructed')
+    while len(manager.ports) != 1:
+        time.sleep(1)
 
-while len(manager.ports) != 1:
-    time.sleep(1)
-
-com = manager.open_serial(packet_size=16)
-print("Com serial pipe opened")
+    com = manager.open_serial(packet_size=16, keep_alive=True)
+    print("Com serial pipe opened")
 
 
-import struct
-def read_floats(bytes):
-    # read the check int to align the flux
-    db = int.from_bytes(bytes[:4], byteorder="little")
-    if db != 0xDEADBEEF:
-        com.offset_stream(1)
-        return
+    import struct
+    def read_floats(bytes):
+        # read the check int to align the flux
+        db = int.from_bytes(bytes[:4], byteorder="little")
+        if db != 0xDEADBEEF:
+            com.offset_stream(1)
+            return
 
-    x = struct.unpack("f", bytes[4:8])[0]
-    y = struct.unpack("f", bytes[8:12])[0]
-    z = struct.unpack("f", bytes[12:16])[0]
-    print("\r                                                                       ", end='')
-    print(f"\r{round(x)}\t{round(y)}\t{round(z)}", end='')
+        x = struct.unpack("f", bytes[4:8])[0]
+        y = struct.unpack("f", bytes[8:12])[0]
+        z = struct.unpack("f", bytes[12:16])[0]
+        print("\r                                                                       ", end='')
+        print(f"\r{round(x)}\t{round(y)}\t{round(z)}", end='')
 
-com.register_listener(read_floats)
+    com.register_listener(read_floats)
 
-while not com.terminated:
-    time.sleep(1)
+    while not com.terminated:
+        time.sleep(1)
 
-print("Arduino disconnected")
+    print("Arduino disconnected")
 
-manager.stop()
-manager.join()
+    manager.stop()
+    manager.join()
 

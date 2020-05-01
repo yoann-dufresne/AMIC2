@@ -199,6 +199,41 @@ class ScreenBox {
   }
 }
 
+class DebugPanel {
+  constructor(network) {
+    this.network = network;
+
+    // Get the document elements to fill or check
+    this.rotation_div = document.getElementById("rotation_sensor");
+    this.debug_checkbox = document.getElementById("debug_value");
+    this.debug_checkbox_p = document.getElementById("debug_checkbox_p");
+    this.start_listening_debug();
+    
+    // Debug message handler
+    let that = this;
+    this.network.set_msg_handler("debug", (msg)=>{that.msg_handler(msg)});
+  }
+
+  start_listening_debug() {
+    let that = this;
+    this.debug_checkbox_p.onclick = () => {that.debug_checkbox.onclick();};
+    this.debug_checkbox.onclick = () => {
+      let debug_value = ! that.debug_checkbox.checked;
+      that.debug_checkbox.checked = debug_value;
+      that.network.send_msg("debug_value " + (debug_value ? "true" : "false"));
+    };
+  }
+
+  msg_handler(msg) {
+    let split = msg.split(" ");
+    if (split[1] == "rotations")
+      this.rotation_div.innerHTML = "<p>x: "+split[2]+"</p><p>y: "+split[3]+"</p><p>z: "+split[4]+"</p>";
+
+    if (split[2] == 0.0)
+      console.log("WTF?!")
+  }
+}
+
 
 var button_setter = function(network) {
   document.getElementById("start_game").onclick = () => {
@@ -228,7 +263,8 @@ var button_setter = function(network) {
 
 
 // ----- Main -----
-network = new Network();
+let network = new Network();
 button_setter(network);
-screener = new ScreenManager(network);
+let screener = new ScreenManager(network);
+let debug = new DebugPanel(network);
 

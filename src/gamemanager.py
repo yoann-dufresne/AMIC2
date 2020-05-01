@@ -1,7 +1,7 @@
 import sys, time, sched, _thread
 
 from game import Game
-from inputs import PositionCarrier
+from inputs import PositionCarrier, PositionUpdater
 
 
 class GameManager:
@@ -11,7 +11,15 @@ class GameManager:
         self.current_game = None
         self.scheduler = sched.scheduler(time.time, time.sleep)
         self.network.socket_server.add_listener(self.message_handler)
+
+        # Start the input listeners
         self.position = PositionCarrier()
+        self.position_updater = PositionUpdater(self.position, debug_network=self.network)
+
+
+    def close(self):
+        self.position_updater.stop()
+        self.position_updater.join()
 
 
     def start_game(self):
@@ -114,3 +122,11 @@ class GameManager:
                 return
             
             self.screens = new_order
+
+        elif keyword == "debug_value":
+            value = True if split[1] == "true" else False
+
+            if value:
+                self.position_updater.debug_network = self.network
+            else:
+                self.position_updater.debug_network = None

@@ -22,6 +22,7 @@ void setup() {
 void loop() {
   if (radio.available()) {
     radio.read(values, 12);
+    //Serial.println("pouet");
     Serial.write(msg, 16);
     Serial.flush();
   }

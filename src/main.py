@@ -2,15 +2,10 @@
 
 import time
 
-# from game import Game
-import inputs
-# from view import View
-
 from server import Server
 from gamemanager import GameManager
 
 import signal
-import sys
 
 
 def main():
@@ -28,10 +23,7 @@ def main():
 
     while (not network.stopped):
         time.sleep(0.2)
-
-    # Close everything
-    # inputs.close()
-
+    gm.close()
 
 
 
